@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de JSON para M.A.E.</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+        }
+        label, input, textarea {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .button-group {
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #346067;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Gerador de JSON para M.A.E.</h1>
+    <form id="maeForm">
+        <label for="principios">Princípios:</label>
+        <input type="text" id="principios" required>
+
+        <label for="desenvolvidoPor">Desenvolvido por:</label>
+        <input type="text" id="desenvolvidoPor" required>
+
+        <label for="aplicacao">Aplicação em:</label>
+        <input type="text" id="aplicacao" required>
+
+        <div class="button-group">
+            <button type="button" onclick="gerarJSONePrompt()">1. Gerar JSON e Prompt</button>
+            <button type="button" onclick="copiarPrompt()">2. Copiar Prompt</button>
+            <button type="button" onclick="abrirOuFocarJanela('https://chat.openai.com/', 'ChatGPT', 800, 600, 200, 100)">3. Abrir ChatGPT</button>
+        </div>
+    </form>
+
+    <h6>JSON Gerado:</h6>
+    <pre id="jsonOutput"></pre>
+    
+    <h6>Prompt Gerado:</h6>
+    <pre id="promptOutput"></pre>
+
+    <h6>Colar Texto do ChatGPT:</h6>
+    <textarea id="gptText" rows="10"></textarea>
+    <button type="button" onclick="processarTextoGPT()">4. Processar Texto do ChatGPT</button>
+</div>
+
+<script>
+    function escapeUnicode(str) {
+        return str.replace(/[^\0-~]/g, function(ch) {
+            return "\\u" + ("000" + ch.charCodeAt().toString(16)).slice(-4);
+        });
+    }
+
+    function gerarJSONePrompt() {
+        const principios = escapeUnicode(document.getElementById('principios').value);
+        const desenvolvidoPor = escapeUnicode(document.getElementById('desenvolvidoPor').value);
+        const aplicacao = escapeUnicode(document.getElementById('aplicacao').value);
+
+        const jsonData = {
+            "01-00-introducao": {
+                "title": "1. Introdu\u00e7\u00e3o aos Princ\u00edpios",
+                "description": `Explora\u00e7\u00e3o de como os princ\u00edpios de ${principios}, desenvolvidos por ${desenvolvidoPor}, podem ser aplicados em ${aplicacao}.`,
+                "url": "https://exemplo.com/introducao",
+                "category": `1. ${principios} em ${aplicacao}`
+            },
+            "01-01-principio1": {
+                "title": "1.1 Princ\u00edpio 1",
+                "description": "Descri\u00e7\u00e3o do princ\u00edpio 1.\n\nExemplo Pr\u00e1tico: Aplica\u00e7\u00e3o do princ\u00edpio 1.",
+                "url": "https://exemplo.com/principio1",
+                "category": `1. ${principios} em ${aplicacao}`
+            },
+            "01-02-principio2": {
+                "title": "1.2 Princ\u00edpio 2",
+                "description": "Descri\u00e7\u00e3o do princ\u00edpio 2.\n\nExemplo Pr\u00e1tico: Aplica\u00e7\u00e3o do princ\u00edpio 2.",
+                "url": "https://exemplo.com/principio2",
+                "category": `1. ${principios} em ${aplicacao}`
+            },
+            // Continue com as outras categorias...
+        };
+
+        const prompt = `
+Tarefa: Criar uma estrutura JSON para o M.A.E. que explique como os princípios [${principios}], desenvolvidos por [${desenvolvidoPor}], podem ser aplicados em [${aplicacao}].
+Requisitos:
+- Formato JSON: Estruturar o conteúdo em formato JSON.
+- Codificação Unicode: Utilizar codificação Unicode para caracteres especiais.
+- Exemplos Práticos: Incluir exemplos práticos com formatação de texto com quebra de linha e parágrafos, que facilite a leitura e compreensão na descrição.
+- URLs Relevantes: Incluir URLs relevantes e válidas para cada item.
+- Estrutura de Categorias: Criar 7 categorias relevantes para o contexto de consultoria, cada uma contendo pelo menos 3 títulos com descrições claras e objetivas. A primeira categoria que é 1. deve o input 1 e 3 do formulário.
+- Detalhamento das Categorias: Cada categoria deve conter uma descrição clara e objetiva.
+- Os itens dentro de cada categoria devem ser aplicáveis ao contexto de consultoria.
+Exemplo:
+{
+  "01-00-introducao-principios": {
+    "title": "1. [utilzar input 1 do formulario]",
+    "description": "Exploração de como os princípios desenvolvidos por João podem ser aplicados em Curso de Jovens.",
+    "url": "https://exemplo.com/introducao-principios",
+    "category": "1. [utilizar input 1 e 3 do formulario]"
+  }
+}
+`;
+
+        document.getElementById('jsonOutput').textContent = JSON.stringify(jsonData, null, 2);
+        document.getElementById('promptOutput').textContent = prompt;
+    }
+
+    function copiarPrompt() {
+        const promptContent = document.getElementById('promptOutput').textContent;
+        navigator.clipboard.writeText(promptContent).then(() => {
+            alert("Prompt copiado para a área de transferência!");
+        });
+    }
+
+    function abrirOuFocarJanela(url, title, width, height, left, top) {
+        const newWindow = window.open(url, title, `width=${width},height=${height},left=${left},top=${top}`);
+        if (newWindow.focus) {
+            newWindow.focus();
+        }
+        document.getElementById('gptText').focus();
+    }
+
+    function processarTextoGPT() {
+        const gptText = document.getElementById('gptText').value;
+        try {
+            const processedJSON = JSON.parse(gptText);
+            const blob = new Blob([JSON.stringify(processedJSON, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            const nomeArquivo = prompt("Digite o nome do arquivo:", "resultado_gpt.json");
+            if (nomeArquivo) {
+                a.download = nomeArquivo;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+        } catch (error) {
+            alert("Erro ao processar o texto. Verifique se o formato está correto.");
+        }
+    }
+</script>
+
+</body>
+</html>
