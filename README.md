@@ -1,6 +1,3 @@
-# mae_prompt_generator
-
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -119,7 +116,6 @@
     </style>
 </head>
 <body>
-
 <div class="container">
     <h1>Gerador de JSON para M.A.E.</h1>
     
@@ -199,7 +195,6 @@
     <textarea id="gptText" rows="10"></textarea>
     <button type="button" onclick="processarTextoGPT()">4. Processar Texto</button>
 </div>
-
 <script>
 // Configuração do sistema
 const MAE_CONFIG = {
@@ -332,7 +327,6 @@ function toggleReferencias() {
         trigger.textContent = '▶';
     }
 }
-
 function gerarJSONePrompt() {
     const principios = escapeUnicode(document.getElementById('principios').value);
     const desenvolvidoPor = escapeUnicode(document.getElementById('desenvolvidoPor').value);
@@ -353,10 +347,20 @@ Tarefa: Criar uma estrutura JSON para o M.A.E. que explique como os princípios 
 Requisitos:
 - Formato JSON: Estruturar o conteúdo em formato JSON.
 - Codificação Unicode: Utilizar codificação Unicode para caracteres especiais.
-- Exemplos Práticos: Incluir exemplos práticos com formatação de texto com quebra de linha e parágrafos.
+- Exemplos Práticos: Incluir exemplos práticos com formatação de texto com quebra de linha e parágrafos, que facilite a leitura e compreensão na descrição.
 - URLs Relevantes: Incluir URLs relevantes e válidas para cada item.
-- Estrutura de Categorias: Criar 7 categorias relevantes para o contexto de consultoria.
+- Estrutura de Categorias: Criar 7 categorias relevantes para o contexto de consultoria, cada uma contendo pelo menos 3 títulos com descrições claras e objetivas. A primeira categoria que é 1. deve o input 1 e 3 do formulário.
 - Detalhamento das Categorias: Cada categoria deve conter uma descrição clara e objetiva.
+- Os itens dentro de cada categoria devem ser aplicáveis ao contexto de consultoria.
+Exemplo:
+{
+  "01-00-introducao-principios": {
+    "title": "1. [utilzar input 1 do formulario]",
+    "description": "Exploração de como os princípios desenvolvidos por João podem ser aplicados em Curso de Jovens.",
+    "url": "https://exemplo.com/introducao-principios",
+    "category": "1. [utilizar input 1 e 3 do formulario]"
+  }
+}
 `;
 
     document.getElementById('jsonOutput').textContent = JSON.stringify(jsonData, null, 2);
