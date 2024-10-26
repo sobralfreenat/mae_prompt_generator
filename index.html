@@ -3,61 +3,221 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de JSON para M.A.E.</title>
+    <title>TRANSCODER M.A.E.</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
+            background-color: #f5f5f5;
         }
         .container {
-            max-width: 600px;
+            max-width: 800px;
             margin: auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        label, input, textarea {
+        .campo-principal {
+            margin-bottom: 20px;
+        }
+        label {
             display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        textarea, input, select {
             width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
             margin-bottom: 10px;
+            font-family: inherit;
+        }
+        textarea {
+            resize: vertical;
+            min-height: 100px;
         }
         .button-group {
-            margin-bottom: 20px;
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
         }
         button {
             padding: 10px 15px;
             background-color: #346067;
             color: white;
             border: none;
+            border-radius: 4px;
             cursor: pointer;
-            margin-right: 5px;
-            margin-bottom: 5px;
+            transition: background-color 0.3s;
         }
         button:hover {
-            background-color: #0056b3;
+            background-color: #2a4c52;
         }
         pre {
-            background-color: #f4f4f4;
-            padding: 10px;
+            background-color: #f8f8f8;
+            padding: 15px;
+            border-radius: 4px;
             overflow-x: auto;
+            border: 1px solid #ddd;
+        }
+        .referencias-section {
+            margin: 20px 0;
+            border: 1px dashed #ccc;
+            border-radius: 4px;
+        }
+        .collapse-trigger {
+            width: 100%;
+            padding: 10px;
+            text-align: left;
+            background: #f8f8f8;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .collapse-trigger:hover {
+            background: blue;
+            color: white;
+        }
+        .collapse-trigger small {
+            color: blue;
+            margin-left: auto;
+        }
+        .collapse-trigger:hover small {
+            color: white;
+        }
+        .collapse-content {
+            padding: 15px;
+            border-top: 1px dashed #ccc;
+        }
+        .referencias-lista {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        .referencia-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        .referencia-item button {
+            padding: 2px 6px;
+            background: #ff4444;
+        }
+        #outroLinkIA {
+            margin-top: 10px;
+        }
+        .ia-selector {
+            margin-bottom: 20px;
+        }
+        #statusVerificacao {
+            padding: 8px;
+            margin: 10px 0;
+            border-radius: 4px;
+            background-color: #f8f8f8;
+            border: 1px solid #ddd;
+        }
+        .url-search-container {
+            display: flex;
+            gap: 10px;
+            flex: 1;
+        }
+        .url-search-container input {
+            flex: 1;
+        }
+        .search-button {
+            background-color: #4285f4;
+            white-space: nowrap;
+        }
+        .search-button:hover {
+            background-color: #357abd;
+        }
+        .add-button {
+            white-space: nowrap;
+        }
+        .referencias-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
-
 <div class="container">
-    <h1>Gerador de JSON para M.A.E.</h1>
+    <h1>TRANSCODER M.A.E.</h1>
+    <br>
     <form id="maeForm">
-        <label for="principios">Princípios:</label>
-        <input type="text" id="principios" required>
+        <div class="campo-principal">
+            <label for="principios">Princípios:</label>
+            <textarea id="principios" placeholder="Descreva detalhadamente os princípios..." required></textarea>
+        </div>
 
-        <label for="desenvolvidoPor">Desenvolvido por:</label>
-        <input type="text" id="desenvolvidoPor" required>
+        <div class="campo-principal">
+            <label for="desenvolvidoPor">Desenvolvido por:</label>
+            <textarea id="desenvolvidoPor" placeholder="Informações sobre autor/desenvolvedor..." required></textarea>
+        </div>
 
-        <label for="aplicacao">Aplicação em:</label>
-        <input type="text" id="aplicacao" required>
+        <div class="campo-principal">
+            <label for="aplicacao">Aplicação em:</label>
+            <textarea id="aplicacao" placeholder="Contexto detalhado de aplicação..." required></textarea>
+        </div>
+
+        <div class="campo-principal">
+            <label for="titulo_resumido">Título Principal (máx. 5 palavras):</label>
+            <input type="text" id="titulo_resumido" maxlength="50" placeholder="Resumo conciso do tema principal" required>
+        </div>
+
+        <div class="referencias-section">
+            <button type="button" class="collapse-trigger" onclick="toggleReferencias()">
+                <span class="icon">▶</span> Sites de Referência (opcional)
+                <small>Expandir para adicionar sites base para geração de URLs</small>
+            </button>
+            
+            <div id="referenciasCollapse" class="collapse-content" style="display: none;">
+                <div class="referencias-container">
+                    <div class="referencias-input-group">
+                        <div class="url-search-container">
+                            <input type="url" id="referenciaUrl" placeholder="https://site-referencia.com">
+                            <button type="button" onclick="abrirPesquisaGoogle()" class="search-button">
+                                🔍 Pesquisar
+                            </button>
+                        </div>
+                        <button type="button" onclick="referencias.adicionar()" class="add-button">Adicionar</button>
+                    </div>
+                    <div id="listaReferencias" class="referencias-lista"></div>
+                    <small>As URLs geradas serão baseadas nestes sites de referência</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="ia-selector">
+            <label for="iaEscolhida">Escolha sua IA:</label>
+            <select id="iaEscolhida" onchange="verificarSelecaoIA()" required>
+                <option value="">Selecione uma IA</option>
+                <option value="https://chat.openai.com/">ChatGPT (OpenAI)</option>
+                <option value="https://gemini.google.com/">Gemini (Google)</option>
+                <option value="https://claude.ai/">Claude (Anthropic)</option>
+                <option value="https://copilot.microsoft.com/">Copilot (Microsoft)</option>
+                <option value="outro">Outra IA...</option>
+            </select>
+            
+            <div id="outroLinkIA" style="display: none;">
+                <label for="linkPersonalizado">Cole o link da IA:</label>
+                <input type="url" id="linkPersonalizado" placeholder="https://sua-ia-preferida.com">
+            </div>
+        </div>
 
         <div class="button-group">
-            <button type="button" onclick="gerarJSONePrompt()">1. Gerar JSON e Prompt</button>
+            <button type="button" onclick="gerarJSONePrompt().catch(error => { console.error(error); alert('Erro ao gerar JSON e prompt: ' + error.message); })">1. Gerar JSON e Prompt</button>
             <button type="button" onclick="copiarPrompt()">2. Copiar Prompt</button>
-            <button type="button" onclick="abrirOuFocarJanela('https://chat.openai.com/', 'ChatGPT', 800, 600, 200, 100)">3. Abrir ChatGPT</button>
+            <button type="button" onclick="abrirIASelecionada()">3. Abrir IA Selecionada</button>
         </div>
     </form>
 
@@ -67,104 +227,342 @@
     <h6>Prompt Gerado:</h6>
     <pre id="promptOutput"></pre>
 
-    <h6>Colar Texto do ChatGPT:</h6>
+    <h6>Colar Texto da IA:</h6>
     <textarea id="gptText" rows="10"></textarea>
-    <button type="button" onclick="processarTextoGPT()">4. Processar Texto do ChatGPT</button>
+    <button type="button" onclick="processarTextoGPT()">4. Processar Texto</button>
 </div>
 
 <script>
-    function escapeUnicode(str) {
-        return str.replace(/[^\0-~]/g, function(ch) {
-            return "\\u" + ("000" + ch.charCodeAt().toString(16)).slice(-4);
-        });
+// Configuração do sistema
+const MAE_CONFIG = {
+    versao: 'free',
+    features: {
+        referencias: {
+            limiteDominio: false,
+            limiteQuantidade: false,
+            maxReferencias: Infinity,
+            permiteDeletar: true
+        }
     }
+};
 
-    function gerarJSONePrompt() {
-        const principios = escapeUnicode(document.getElementById('principios').value);
-        const desenvolvidoPor = escapeUnicode(document.getElementById('desenvolvidoPor').value);
-        const aplicacao = escapeUnicode(document.getElementById('aplicacao').value);
+// Sistema de referências
+const referencias = {
+    lista: [],
+    
+    adicionar: function() {
+        const input = document.getElementById('referenciaUrl');
+        const url = input.value.trim();
+        
+        if (url && this.validarUrl(url)) {
+            if (this.podeAdicionarReferencia(url)) {
+                this.lista.push({
+                    url: url,
+                    timestamp: new Date().toISOString()
+                });
+                this.atualizarLista();
+                input.value = '';
+                this.salvarReferencias();
+            }
+        }
+    },
+
+    podeAdicionarReferencia: function(novaUrl) {
+        const config = MAE_CONFIG.features.referencias;
+        
+        if (config.limiteQuantidade && this.lista.length >= config.maxReferencias) {
+            alert('Limite de referências atingido. Faça upgrade para adicionar mais!');
+            return false;
+        }
+        return true;
+    },
+
+    remover: function(index) {
+        if (MAE_CONFIG.features.referencias.permiteDeletar) {
+            this.lista.splice(index, 1);
+            this.atualizarLista();
+            this.salvarReferencias();
+        } else {
+            alert('Remoção de referências disponível apenas na versão PRO!');
+        }
+    },
+
+    atualizarLista: function() {
+        const container = document.getElementById('listaReferencias');
+        container.innerHTML = '';
+        
+        this.lista.forEach((ref, index) => {
+            const div = document.createElement('div');
+            div.className = 'referencia-item';
+            div.innerHTML = `
+                <a href="${ref.url}" target="_blank">${ref.url}</a>
+                <button onclick="referencias.remover(${index})">×</button>
+            `;
+            container.appendChild(div);
+        });
+    },
+
+    validarUrl: function(url) {
+        try {
+            new URL(url);
+            return true;
+        } catch {
+            alert('Por favor, insira uma URL válida');
+            return false;
+        }
+    },
+
+    salvarReferencias: function() {
+        localStorage.setItem('mae_referencias', JSON.stringify(this.lista));
+    },
+
+    carregarReferencias: function() {
+        const salvas = localStorage.getItem('mae_referencias');
+        if (salvas) {
+            this.lista = JSON.parse(salvas);
+            this.atualizarLista();
+        }
+    },
+
+    verificarUrl: async function(url) {
+        try {
+            const response = await fetch(url, {
+                method: 'HEAD',
+                mode: 'cors',
+                timeout: 5000
+            });
+            return response.ok;
+        } catch {
+            return false;
+        }
+    },
+
+    gerarUrlValida: async function(categoria, contexto) {
+        if (this.lista.length === 0) {
+            return `https://exemplo.com/${categoria.toLowerCase()}`;
+        }
+
+        // Adiciona indicador visual de verificação
+        const statusElement = document.createElement('div');
+        statusElement.id = 'statusVerificacao';
+        statusElement.style.color = '#346067';
+        statusElement.style.marginTop = '10px';
+        document.getElementById('jsonOutput').parentNode.insertBefore(
+            statusElement, 
+            document.getElementById('jsonOutput')
+        );
+
+        for (const ref of this.lista) {
+            statusElement.textContent = `Verificando URL: ${ref.url}...`;
+            
+            const baseUrl = ref.url.replace(/\/+$/, '');
+            const path = `${categoria.toLowerCase()}/${contexto.toLowerCase()}`.replace(/^\/+/, '');
+            const urlCompleta = `${baseUrl}/${path}`;
+
+            if (await this.verificarUrl(urlCompleta)) {
+                statusElement.textContent = `URL válida encontrada: ${urlCompleta}`;
+                return urlCompleta;
+            }
+        }
+
+        statusElement.textContent = 'Nenhuma URL válida encontrada, usando URL não verificada';
+        const primeiraRef = this.lista[0];
+        return `${primeiraRef.url}/${categoria.toLowerCase()}`;
+    }
+};
+
+function escapeUnicode(str) {
+    return str.replace(/[^\0-~]/g, function(ch) {
+        return "\\u" + ("000" + ch.charCodeAt().toString(16)).slice(-4);
+    });
+}
+
+function verificarSelecaoIA() {
+    const select = document.getElementById('iaEscolhida');
+    const outroLink = document.getElementById('outroLinkIA');
+    
+    if (select.value === 'outro') {
+        outroLink.style.display = 'block';
+    } else {
+        outroLink.style.display = 'none';
+    }
+}
+
+function toggleReferencias() {
+    const content = document.getElementById('referenciasCollapse');
+    const trigger = document.querySelector('.collapse-trigger .icon');
+    
+    if (content.style.display === 'none') {
+        content.style.display = 'block';
+        trigger.textContent = '▼';
+    } else {
+        content.style.display = 'none';
+        trigger.textContent = '▶';
+    }
+}
+
+function abrirPesquisaGoogle() {
+    const principios = document.getElementById('principios').value;
+    const desenvolvidoPor = document.getElementById('desenvolvidoPor').value;
+    const aplicacao = document.getElementById('aplicacao').value;
+    
+    // Construir query de pesquisa baseada nos dados do formulário
+    const searchQuery = encodeURIComponent(`${principios} ${desenvolvidoPor} ${aplicacao}`);
+    const googleUrl = `https://www.google.com/search?q=${searchQuery}`;
+    
+    // Abrir pop-up de pesquisa
+    const width = 800;
+    const height = 600;
+    const left = (window.innerWidth - width) / 2;
+    const top = (window.innerHeight - height) / 2;
+    
+    window.open(
+        googleUrl,
+        'GoogleSearch',
+        `width=${width},height=${height},left=${left},top=${top},menubar=no,toolbar=no,location=no,status=no`
+    );
+}
+
+async function gerarJSONePrompt() {
+    const principios = escapeUnicode(document.getElementById('principios').value);
+    const desenvolvidoPor = escapeUnicode(document.getElementById('desenvolvidoPor').value);
+    const aplicacao = escapeUnicode(document.getElementById('aplicacao').value);
+    const titulo = escapeUnicode(document.getElementById('titulo_resumido').value);
+
+    document.getElementById('jsonOutput').textContent = 'Verificando URLs...';
+
+    try {
+        const urlIntroducao = await referencias.gerarUrlValida("introducao", "principios");
 
         const jsonData = {
             "01-00-introducao": {
-                "title": "1. Introdu\u00e7\u00e3o aos Princ\u00edpios",
-                "description": `Explora\u00e7\u00e3o de como os princ\u00edpios de ${principios}, desenvolvidos por ${desenvolvidoPor}, podem ser aplicados em ${aplicacao}.`,
-                "url": "https://exemplo.com/introducao",
+                "title": `1. ${titulo}`,
+                "description": `Exploração de como os princípios de ${principios}, desenvolvidos por ${desenvolvidoPor}, podem ser aplicados em ${aplicacao}.`,
+                "url": urlIntroducao,
                 "category": `1. ${principios} em ${aplicacao}`
-            },
-            "01-01-principio1": {
-                "title": "1.1 Princ\u00edpio 1",
-                "description": "Descri\u00e7\u00e3o do princ\u00edpio 1.\n\nExemplo Pr\u00e1tico: Aplica\u00e7\u00e3o do princ\u00edpio 1.",
-                "url": "https://exemplo.com/principio1",
-                "category": `1. ${principios} em ${aplicacao}`
-            },
-            "01-02-principio2": {
-                "title": "1.2 Princ\u00edpio 2",
-                "description": "Descri\u00e7\u00e3o do princ\u00edpio 2.\n\nExemplo Pr\u00e1tico: Aplica\u00e7\u00e3o do princ\u00edpio 2.",
-                "url": "https://exemplo.com/principio2",
-                "category": `1. ${principios} em ${aplicacao}`
-            },
-            // Continue com as outras categorias...
+            }
         };
 
-        const prompt = `
+        document.getElementById('jsonOutput').textContent = JSON.stringify(jsonData, null, 2);
+    } catch (error) {
+        document.getElementById('jsonOutput').textContent = 'Erro ao verificar URLs: ' + error.message;
+    }
+
+    const referenciasUrls = referencias.lista.length > 0 
+        ? referencias.lista.map(ref => ref.url).join('\n- ')
+        : '- https://exemplo.com (nenhuma referência fornecida)';
+
+    const prompt = `
 Tarefa: Criar uma estrutura JSON para o M.A.E. que explique como os princípios [${principios}], desenvolvidos por [${desenvolvidoPor}], podem ser aplicados em [${aplicacao}].
+
+URLs de Referência Fornecidas:
+- ${referenciasUrls}
+
 Requisitos:
 - Formato JSON: Estruturar o conteúdo em formato JSON.
 - Codificação Unicode: Utilizar codificação Unicode para caracteres especiais.
 - Exemplos Práticos: Incluir exemplos práticos com formatação de texto com quebra de linha e parágrafos, que facilite a leitura e compreensão na descrição.
-- URLs Relevantes: Incluir URLs relevantes e válidas para cada item.
-- Estrutura de Categorias: Criar 7 categorias relevantes para o contexto de consultoria, cada uma contendo pelo menos 3 títulos com descrições claras e objetivas. A primeira categoria que é 1. deve o input 1 e 3 do formulário.
+- URLs Relevantes: Para cada objeto do JSON, gerar uma URL que DEVE seguir este padrão:
+  * Se existirem URLs de referência fornecidas: usar uma das URLs base listadas acima, escolhida aleatoriamente, e adicionar um path relacionado ao contexto do objeto
+  * Se não existirem URLs de referência: usar "https://exemplo.com" como base
+  Exemplo de URL gerada: Se a URL base for "https://site1.com", a URL final poderia ser "https://site1.com/principios/gestao" ou "https://site1.com/aplicacao/metodologia"
+- Estrutura de Categorias: Criar 7 categorias relevantes para o contexto de consultoria, cada uma contendo pelo menos 3 títulos com descrições claras e objetivas. A primeira categoria deve usar o input 1 e 3 do formulário.
 - Detalhamento das Categorias: Cada categoria deve conter uma descrição clara e objetiva.
 - Os itens dentro de cada categoria devem ser aplicáveis ao contexto de consultoria.
-Exemplo:
+
+Exemplo de Estrutura Esperada:
 {
-  "01-00-introducao-principios": {
-    "title": "1. [utilzar input 1 do formulario]",
-    "description": "Exploração de como os princípios desenvolvidos por João podem ser aplicados em Curso de Jovens.",
-    "url": "https://exemplo.com/introducao-principios",
-    "category": "1. [utilizar input 1 e 3 do formulario]"
+  "1-0-introducao-principios": {
+    "title": "1. [utilizar input 1 do formulário]",
+    "description": "Exploração de como os princípios desenvolvidos por [desenvolvidoPor] podem ser aplicados em [aplicacao].",
+    "url": "[usar uma URL base das referências]/introducao-principios",
+    "category": "1. [utilizar input 1 e 3 do formulário]"
+  },
+  "1-1-fundamentos": {
+    "title": "1.1. Fundamentos Básicos",
+    "description": "Descrição dos fundamentos básicos...",
+    "url": "[usar uma URL base das referências]/fundamentos",
+    "category": "1. [utilizar input 1 e 3 do formulário]"
+  },
+  "1-2-conceitos": {
+    "title": "1.2. Conceitos Principais",
+    "description": "Descrição dos conceitos principais...",
+    "url": "[usar uma URL base das referências]/conceitos",
+    "category": "1. [utilizar input 1 e 3 do formulário]"
+  },
+  "1-3-aplicacoes": {
+    "title": "1.3. Aplicações Práticas",
+    "description": "Descrição das aplicações práticas...",
+    "url": "[usar uma URL base das referências]/aplicacoes",
+    "category": "1. [utilizar input 1 e 3 do formulário]"
   }
 }
+
+Importante:
+1. Mantenha a estrutura JSON exatamente como mostrado no exemplo
+2. Use as URLs de referência fornecidas para gerar as URLs de cada objeto
+3. Garanta que todas as URLs geradas sejam únicas dentro do JSON
+4. Mantenha a consistência na numeração das categorias (1, 2, 3, etc.)
+5. Garanta que os paths adicionados às URLs base façam sentido com o contexto do objeto
 `;
 
-        document.getElementById('jsonOutput').textContent = JSON.stringify(jsonData, null, 2);
-        document.getElementById('promptOutput').textContent = prompt;
-    }
+    document.getElementById('promptOutput').textContent = prompt;
+}
 
-    function copiarPrompt() {
-        const promptContent = document.getElementById('promptOutput').textContent;
-        navigator.clipboard.writeText(promptContent).then(() => {
-            alert("Prompt copiado para a área de transferência!");
-        });
-    }
+function copiarPrompt() {
+    const promptContent = document.getElementById('promptOutput').textContent;
+    navigator.clipboard.writeText(promptContent).then(() => {
+        alert("Prompt copiado para a área de transferência!");
+    });
+}
 
-    function abrirOuFocarJanela(url, title, width, height, left, top) {
-        const newWindow = window.open(url, title, `width=${width},height=${height},left=${left},top=${top}`);
-        if (newWindow.focus) {
-            newWindow.focus();
+function abrirIASelecionada() {
+    const select = document.getElementById('iaEscolhida');
+    let url = select.value;
+    
+    if (url === 'outro') {
+        url = document.getElementById('linkPersonalizado').value;
+    }
+    
+    if (!url) {
+        alert('Por favor, selecione uma IA ou forneça um link válido!');
+        return;
+    }
+    
+    abrirOuFocarJanela(url, 'IA_Window', 800, 600, 200, 100);
+}
+
+function abrirOuFocarJanela(url, title, width, height, left, top) {
+    const newWindow = window.open(url, title, `width=${width},height=${height},left=${left},top=${top}`);
+    if (newWindow.focus) {
+        newWindow.focus();
+    }
+    document.getElementById('gptText').focus();
+}
+
+function processarTextoGPT() {
+    const gptText = document.getElementById('gptText').value;
+    try {
+        const processedJSON = JSON.parse(gptText);
+        const blob = new Blob([JSON.stringify(processedJSON, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        const nomeArquivo = prompt("Digite o nome do arquivo:", "resultado_gpt.json");
+        if (nomeArquivo) {
+            a.download = nomeArquivo;
+            a.click();
+            URL.revokeObjectURL(url);
         }
-        document.getElementById('gptText').focus();
+    } catch (error) {
+        alert("Erro ao processar o texto. Verifique se o formato está correto.");
     }
+}
 
-    function processarTextoGPT() {
-        const gptText = document.getElementById('gptText').value;
-        try {
-            const processedJSON = JSON.parse(gptText);
-            const blob = new Blob([JSON.stringify(processedJSON, null, 2)], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            const nomeArquivo = prompt("Digite o nome do arquivo:", "resultado_gpt.json");
-            if (nomeArquivo) {
-                a.download = nomeArquivo;
-                a.click();
-                URL.revokeObjectURL(url);
-            }
-        } catch (error) {
-            alert("Erro ao processar o texto. Verifique se o formato está correto.");
-        }
-    }
+// Inicialização
+document.addEventListener('DOMContentLoaded', function() {
+    referencias.carregarReferencias();
+});
 </script>
-
 </body>
 </html>
