@@ -467,9 +467,16 @@ Requisitos:
   * Se existirem URLs de referência fornecidas: usar uma das URLs base listadas acima, escolhida aleatoriamente, e adicionar um path relacionado ao contexto do objeto
   * Se não existirem URLs de referência: usar "https://exemplo.com" como base
   Exemplo de URL gerada: Se a URL base for "https://site1.com", a URL final poderia ser "https://site1.com/principios/gestao" ou "https://site1.com/aplicacao/metodologia"
-- Estrutura de Categorias: Criar 7 categorias relevantes para o contexto de consultoria, cada uma contendo pelo menos 3 títulos com descrições claras e objetivas. A primeira categoria deve usar o input 1 e 3 do formulário.
+- Estrutura de Categorias: Criar EXATAMENTE 7 categorias relevantes para o contexto de consultoria, cada uma contendo EXATAMENTE 3 títulos com descrições claras e objetivas. A primeira categoria deve usar o input 1 e 3 do formulário.
 - Detalhamento das Categorias: Cada categoria deve conter uma descrição clara e objetiva.
 - Os itens dentro de cada categoria devem ser aplicáveis ao contexto de consultoria.
+- Garantir âncoras relacionadas a cada um dos 3 tópicos de cada uma das 7 categorias geradas, concatenando as diferentes fontes (Sites) para distribuir nas URLs que consideram as âncoras por tópicos.
+- Incluir sempre a Categoria APOIO como a sétima categoria, contendo os seguintes itens:
+  1. Índice Estratégico Dinâmico: Abra o Índice Estratégico Dinâmico para suas anotações
+     URL: https://sobralfreenat.github.io/indice_estrategico/
+  2. Contato FNW Assessoria: Entre em contato via WhatsApp
+     URL: https://wa.me/5511911595028
+  3. Suporte Adicional: Recursos e ferramentas complementares
 
 Exemplo de Estrutura Esperada:
 {
@@ -496,6 +503,26 @@ Exemplo de Estrutura Esperada:
     "description": "Descrição das aplicações práticas...",
     "url": "[usar uma URL base das referências]/aplicacoes",
     "category": "1. [utilizar input 1 e 3 do formulário]"
+  },
+  // ... (categorias 2 a 7 seguindo o mesmo padrão)
+  "8-0-apoio": {
+    "title": "7. Apoio e Recursos Adicionais",
+    "description": "Ferramentas e recursos de suporte para aprimorar a aplicação dos princípios em consultoria.",
+    "url": "https://sobralfreenat.github.io/indice_estrategico/",
+    "category": "7. Apoio e Recursos Adicionais"
+  },
+  "8-1-indice-estrategico": {
+    "title": "7.1. Índice Estratégico Dinâmico",
+    "description": "Abra o Índice Estratégico Dinâmico para suas anotações e planejamento estratégico.",
+    "url": "https://sobralfreenat.github.io/indice_estrategico/",
+    "category": "7. Apoio e Recursos Adicionais"
+  },
+  "8-2-contato-fnw": {
+    "title": "7.2. Contato FNW Assessoria",
+    "description": "Entre em contato via WhatsApp com a FNW Assessoria para suporte personalizado.",
+    "url": "https://wa.me/5511911595028",
+    "category": "7. Apoio e Recursos Adicionais"
+  
   }
 }
 
@@ -505,6 +532,9 @@ Importante:
 3. Garanta que todas as URLs geradas sejam únicas dentro do JSON
 4. Mantenha a consistência na numeração das categorias (1, 2, 3, etc.)
 5. Garanta que os paths adicionados às URLs base façam sentido com o contexto do objeto
+6. Certifique-se de criar EXATAMENTE 7 categorias, cada uma com EXATAMENTE 3 itens
+7. Inclua a categoria APOIO como a sétima categoria, conforme especificado
+8. Utilize âncoras relacionadas a cada tópico nas URLs geradas
 `;
 
     document.getElementById('promptOutput').textContent = prompt;
