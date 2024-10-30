@@ -147,27 +147,73 @@
             gap: 10px;
             margin-bottom: 10px;
         }
+        #promptEditorContainer {
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        #promptEditor {
+            width: 100%;
+            min-height: 200px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            display: none;
+        }
+        #editButton, #togglePromptEditor {
+            margin-right: 10px;
+        }
+        .modo-entrada {
+            display: none;
+        }
     </style>
 </head>
 <body>
-<img  src="https://d1yei2z3i6k35z.cloudfront.net/3119789/666e1df34d7ed_BannerFNWAssessoriaDigitalprovisorio.png" alt="Banner" style="width: 22%; height: auto; display: block; margin-left: 600; margin-right: 420;" loading="lazy">
+<img src="https://d1yei2z3i6k35z.cloudfront.net/3119789/666e1df34d7ed_BannerFNWAssessoriaDigitalprovisorio.png" alt="Banner" style="width: 22%; height: auto; display: block; margin-left: 600; margin-right: 420;" loading="lazy">
 <div class="container">
     <h1>ENCODER M.A.E.</h1>
     <br>
     <form id="maeForm">
-        <div class="campo-principal">
-            <label for="principios">Princípios:</label>
-            <textarea id="principios" placeholder="Descreva detalhadamente os princípios..." required></textarea>
+        <div class="modo-selector">
+            <label>Escolha o modo de entrada:</label>
+            <select id="modoEntrada" onchange="alternarModoEntrada()">
+                <option value="youtube">Referência YouTube com Transcrição</option>
+                <option value="manual">Entrada Manual (Princípios, Desenvolvido por, Aplicação)</option>
+                <option value="cliente">Texto ou Documento do Cliente</option>
+            </select>
         </div>
 
-        <div class="campo-principal">
-            <label for="desenvolvidoPor">Desenvolvido por:</label>
-            <textarea id="desenvolvidoPor" placeholder="Informações sobre autor/desenvolvedor..." required></textarea>
+        <div id="modoYoutube" class="modo-entrada">
+            <div class="campo-principal">
+                <label for="urlVideo">URL do Vídeo do YouTube:</label>
+                <input type="url" id="urlVideo" placeholder="https://www.youtube.com/watch?v=...">
+            </div>
+            <div class="campo-principal">
+                <label for="transcricaoYoutube">Transcrição do YouTube:</label>
+                <textarea id="transcricaoYoutube" placeholder="Cole aqui a transcrição do vídeo do YouTube..."></textarea>
+                <button type="button" onclick="processarTranscricaoYoutube()">Processar Transcrição</button>
+            </div>
         </div>
 
-        <div class="campo-principal">
-            <label for="aplicacao">Aplicação em:</label>
-            <textarea id="aplicacao" placeholder="Contexto detalhado de aplicação..." required></textarea>
+        <div id="modoManual" class="modo-entrada" style="display: none;">
+            <div class="campo-principal">
+                <label for="principios">Princípios:</label>
+                <textarea id="principios" placeholder="Descreva detalhadamente os princípios..."></textarea>
+            </div>
+            <div class="campo-principal">
+                <label for="desenvolvidoPor">Desenvolvido por:</label>
+                <textarea id="desenvolvidoPor" placeholder="Informações sobre autor/desenvolvedor..."></textarea>
+            </div>
+            <div class="campo-principal">
+                <label for="aplicacao">Aplicação em:</label>
+                <textarea id="aplicacao" placeholder="Contexto detalhado de aplicação..."></textarea>
+            </div>
+        </div>
+
+        <div id="modoCliente" class="modo-entrada" style="display: none;">
+            <div class="campo-principal">
+                <label for="textoCliente">Texto ou Documento do Cliente:</label>
+                <textarea id="textoCliente" placeholder="Cole aqui o texto do cliente ou a estrutura M.A.E. (Categoria, Título, Descrição, URL)..."></textarea>
+                <button type="button" onclick="processarTextoCliente()">Processar Texto do Cliente</button>
+            </div>
         </div>
 
         <div class="campo-principal">
@@ -228,9 +274,19 @@
     <h6>Prompt Gerado:</h6>
     <pre id="promptOutput"></pre>
 
+    <h6>Editar Prompt:</h6>
+    <div id="promptEditorContainer">
+        <button id="togglePromptEditor">Expandir Editor</button>
+        <textarea id="promptEditor" rows="10"></textarea>
+        <button id="editButton">Atualizar Prompt</button>
+    </div>
+
     <h6>Colar Texto da IA:</h6>
     <textarea id="gptText" rows="10"></textarea>
     <button type="button" onclick="processarTextoGPT()">4. Processar Texto</button>
+
+    <button id="saveStateButton">Salvar Estado</button>
+    <button id="loadStateButton">Carregar Estado</button>
 </div>
 
 <script>
@@ -325,50 +381,14 @@ const referencias = {
         }
     },
 
-    verificarUrl: async function(url) {
-        try {
-            const response = await fetch(url, {
-                method: 'HEAD',
-                mode: 'cors',
-                timeout: 5000
-            });
-            return response.ok;
-        } catch {
-            return false;
-        }
-    },
-
-    gerarUrlValida: async function(categoria, contexto) {
+    gerarUrlValida: function(categoria, contexto) {
         if (this.lista.length === 0) {
-            return `https://exemplo.com/${categoria.toLowerCase()}`;
+            return `https://exemplo.com/${categoria.toLowerCase()}/${contexto.toLowerCase()}`;
         }
-
-        // Adiciona indicador visual de verificação
-        const statusElement = document.createElement('div');
-        statusElement.id = 'statusVerificacao';
-        statusElement.style.color = '#346067';
-        statusElement.style.marginTop = '10px';
-        document.getElementById('jsonOutput').parentNode.insertBefore(
-            statusElement, 
-            document.getElementById('jsonOutput')
-        );
-
-        for (const ref of this.lista) {
-            statusElement.textContent = `Verificando URL: ${ref.url}...`;
-            
-            const baseUrl = ref.url.replace(/\/+$/, '');
-            const path = `${categoria.toLowerCase()}/${contexto.toLowerCase()}`.replace(/^\/+/, '');
-            const urlCompleta = `${baseUrl}/${path}`;
-
-            if (await this.verificarUrl(urlCompleta)) {
-                statusElement.textContent = `URL válida encontrada: ${urlCompleta}`;
-                return urlCompleta;
-            }
-        }
-
-        statusElement.textContent = 'Nenhuma URL válida encontrada, usando URL não verificada';
-        const primeiraRef = this.lista[0];
-        return `${primeiraRef.url}/${categoria.toLowerCase()}`;
+        
+        const indiceAleatorio = Math.floor(Math.random() * this.lista.length);
+        const urlBase = this.lista[indiceAleatorio].url.replace(/\/+$/, '');
+                return `${urlBase}/${categoria.toLowerCase()}/${contexto.toLowerCase()}`;
     }
 };
 
@@ -407,11 +427,9 @@ function abrirPesquisaGoogle() {
     const desenvolvidoPor = document.getElementById('desenvolvidoPor').value;
     const aplicacao = document.getElementById('aplicacao').value;
     
-    // Construir query de pesquisa baseada nos dados do formulário
     const searchQuery = encodeURIComponent(`${principios} ${desenvolvidoPor} ${aplicacao}`);
     const googleUrl = `https://www.google.com/search?q=${searchQuery}`;
     
-    // Abrir pop-up de pesquisa
     const width = 800;
     const height = 600;
     const left = (window.innerWidth - width) / 2;
@@ -424,30 +442,50 @@ function abrirPesquisaGoogle() {
     );
 }
 
+function alternarModoEntrada() {
+    const modo = document.getElementById('modoEntrada').value;
+    document.getElementById('modoYoutube').style.display = modo === 'youtube' ? 'block' : 'none';
+    document.getElementById('modoManual').style.display = modo === 'manual' ? 'block' : 'none';
+    document.getElementById('modoCliente').style.display = modo === 'cliente' ? 'block' : 'none';
+}
+
 async function gerarJSONePrompt() {
-    const principios = escapeUnicode(document.getElementById('principios').value);
-    const desenvolvidoPor = escapeUnicode(document.getElementById('desenvolvidoPor').value);
-    const aplicacao = escapeUnicode(document.getElementById('aplicacao').value);
-    const titulo = escapeUnicode(document.getElementById('titulo_resumido').value);
+    const modo = document.getElementById('modoEntrada').value;
+    let principios, desenvolvidoPor, aplicacao, urlVideo;
 
-    document.getElementById('jsonOutput').textContent = 'Verificando URLs...';
-
-    try {
-        const urlIntroducao = await referencias.gerarUrlValida("introducao", "principios");
-
-        const jsonData = {
-            "01-00-introducao": {
-                "title": `1. ${titulo}`,
-                "description": `Exploração de como os princípios de ${principios}, desenvolvidos por ${desenvolvidoPor}, podem ser aplicados em ${aplicacao}.`,
-                "url": urlIntroducao,
-                "category": `1. ${principios} em ${aplicacao}`
-            }
-        };
-
-        document.getElementById('jsonOutput').textContent = JSON.stringify(jsonData, null, 2);
-    } catch (error) {
-        document.getElementById('jsonOutput').textContent = 'Erro ao verificar URLs: ' + error.message;
+    switch (modo) {
+        case 'youtube':
+            urlVideo = escapeUnicode(document.getElementById('urlVideo').value);
+            principios = escapeUnicode(document.getElementById('principios').value);
+            desenvolvidoPor = escapeUnicode(document.getElementById('desenvolvidoPor').value);
+            aplicacao = escapeUnicode(document.getElementById('aplicacao').value);
+            break;
+        case 'manual':
+            principios = escapeUnicode(document.getElementById('principios').value);
+            desenvolvidoPor = escapeUnicode(document.getElementById('desenvolvidoPor').value);
+            aplicacao = escapeUnicode(document.getElementById('aplicacao').value);
+            break;
+        case 'cliente':
+            // Processar texto do cliente
+            const textoCliente = document.getElementById('textoCliente').value;
+            // Aqui você precisaria implementar a lógica para extrair as informações do texto do cliente
+            break;
     }
+
+    const titulo = escapeUnicode(document.getElementById('titulo_resumido').value);
+    const urlIntroducao = referencias.gerarUrlValida("introducao", "principios");
+
+    const jsonData = {
+        "01-00-introducao": {
+            "title": `1. ${titulo}`,
+            "description": `Exploração de como os princípios de ${principios}, desenvolvidos por ${desenvolvidoPor}, podem ser aplicados em ${aplicacao}.`,
+            "url": urlIntroducao,
+            "category": `1. ${principios} em ${aplicacao}`,
+            "videoUrl": urlVideo
+        }
+    };
+
+    document.getElementById('jsonOutput').textContent = JSON.stringify(jsonData, null, 2);
 
     const referenciasUrls = referencias.lista.length > 0 
         ? referencias.lista.map(ref => ref.url).join('\n- ')
@@ -455,6 +493,8 @@ async function gerarJSONePrompt() {
 
     const prompt = `
 Tarefa: Criar uma estrutura JSON para o M.A.E. que explique como os princípios [${principios}], desenvolvidos por [${desenvolvidoPor}], podem ser aplicados em [${aplicacao}].
+
+${urlVideo ? `URL do Vídeo: ${urlVideo}` : ''}
 
 URLs de Referência Fornecidas:
 - ${referenciasUrls}
@@ -484,7 +524,8 @@ Exemplo de Estrutura Esperada:
     "title": "1. [utilizar input 1 do formulário]",
     "description": "Exploração de como os princípios desenvolvidos por [desenvolvidoPor] podem ser aplicados em [aplicacao].",
     "url": "[usar uma URL base das referências]/introducao-principios",
-    "category": "1. [utilizar input 1 e 3 do formulário]"
+    "category": "1. [utilizar input 1 e 3 do formulário]",
+    "videoUrl": "[URL do vídeo, se aplicável]"
   },
   "1-1-fundamentos": {
     "title": "1.1. Fundamentos Básicos",
@@ -522,7 +563,6 @@ Exemplo de Estrutura Esperada:
     "description": "Entre em contato via WhatsApp com a FNW Assessoria para suporte personalizado.",
     "url": "https://wa.me/5511911595028",
     "category": "7. Apoio e Recursos Adicionais"
-  
   }
 }
 
@@ -535,9 +575,11 @@ Importante:
 6. Certifique-se de criar EXATAMENTE 7 categorias, cada uma com EXATAMENTE 3 itens
 7. Inclua a categoria APOIO como a sétima categoria, conforme especificado
 8. Utilize âncoras relacionadas a cada tópico nas URLs geradas
+9. Inclua a URL do vídeo em cada objeto do JSON, se aplicável
 `;
 
     document.getElementById('promptOutput').textContent = prompt;
+    document.getElementById('promptEditor').value = prompt;
 }
 
 function copiarPrompt() {
@@ -579,7 +621,7 @@ function processarTextoGPT() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        const nomeArquivo = prompt("Digite o nome do arquivo:", "resultado_gpt.json");
+        const nomeArquivo = gerarNomeArquivoJSON();
         if (nomeArquivo) {
             a.download = nomeArquivo;
             a.click();
@@ -590,10 +632,205 @@ function processarTextoGPT() {
     }
 }
 
+function gerarNomeArquivoJSON() {
+    const titulo = document.getElementById('titulo_resumido').value.replace(/\s+/g, '_');
+    const iaEscolhida = document.getElementById('iaEscolhida').value;
+    const ia = iaEscolhida === 'outro' ? 'personalizada' : iaEscolhida.split('/').pop();
+    return `M.A.E._${titulo}_${ia}.json`;
+}
+
+function salvarEstado() {
+    const estado = {
+        modoEntrada: document.getElementById('modoEntrada').value,
+        urlVideo: document.getElementById('urlVideo').value,
+        transcricaoYoutube: document.getElementById('transcricaoYoutube').value,
+        principios: document.getElementById('principios').value,
+        desenvolvidoPor: document.getElementById('desenvolvidoPor').value,
+        aplicacao: document.getElementById('aplicacao').value,
+        textoCliente: document.getElementById('textoCliente').value,
+        titulo_resumido: document.getElementById('titulo_resumido').value,
+        referencias: referencias.lista,
+        iaEscolhida: document.getElementById('iaEscolhida').value,
+        linkPersonalizado: document.getElementById('linkPersonalizado').value,
+        promptEditor: document.getElementById('promptEditor').value
+    };
+    localStorage.setItem('mae_estado', JSON.stringify(estado));
+    alert('Estado salvo com sucesso!');
+}
+
+function carregarEstado() {
+    const estadoSalvo = localStorage.getItem('mae_estado');
+    if (estadoSalvo) {
+        const estado = JSON.parse(estadoSalvo);
+        document.getElementById('modoEntrada').value = estado.modoEntrada || 'youtube';
+        document.getElementById('urlVideo').value = estado.urlVideo || '';
+        document.getElementById('transcricaoYoutube').value = estado.transcricaoYoutube || '';
+        document.getElementById('principios').value = estado.principios || '';
+        document.getElementById('desenvolvidoPor').value = estado.desenvolvidoPor || '';
+        document.getElementById('aplicacao').value = estado.aplicacao || '';
+        document.getElementById('textoCliente').value = estado.textoCliente || '';
+        document.getElementById('titulo_resumido').value = estado.titulo_resumido || '';
+        referencias.lista = estado.referencias || [];
+        referencias.atualizarLista();
+        document.getElementById('iaEscolhida').value = estado.iaEscolhida || '';
+	        document.getElementById('linkPersonalizado').value = estado.linkPersonalizado || '';
+        document.getElementById('promptEditor').value = estado.promptEditor || '';
+        alternarModoEntrada();
+        verificarSelecaoIA();
+        alert('Estado carregado com sucesso!');
+    } else {
+        alert('Nenhum estado salvo encontrado.');
+    }
+}
+
+function processarTranscricaoYoutube() {
+    const urlVideo = document.getElementById('urlVideo').value.trim();
+    const transcricao = document.getElementById('transcricaoYoutube').value.trim();
+    
+    if (!urlVideo) {
+        alert('Por favor, insira a URL do vídeo do YouTube.');
+        return;
+    }
+    if (!transcricao) {
+        alert('Por favor, insira a transcrição do vídeo do YouTube.');
+        return;
+    }
+
+    // Dividir a transcrição em parágrafos
+    const paragrafos = transcricao.split('\n\n');
+
+    // Extrair informações relevantes
+    let principios = [];
+    let desenvolvidoPor = [];
+    let aplicacao = [];
+    let titulo = '';
+
+    paragrafos.forEach(paragrafo => {
+        const paragrafoLower = paragrafo.toLowerCase();
+        if (paragrafoLower.includes('princípio') || paragrafoLower.includes('principio')) {
+            principios.push(paragrafo);
+        } else if (paragrafoLower.includes('desenvolvido por') || paragrafoLower.includes('autor')) {
+            desenvolvidoPor.push(paragrafo);
+        } else if (paragrafoLower.includes('aplicação') || paragrafoLower.includes('aplicacao')) {
+            aplicacao.push(paragrafo);
+        } else if (paragrafoLower.includes('título') || paragrafoLower.includes('titulo')) {
+            titulo = paragrafo;
+        }
+    });
+
+    // Preparar informações extraídas
+    const infoExtraida = {
+        urlVideo: urlVideo,
+        principios: principios.join('\n\n'),
+        desenvolvidoPor: desenvolvidoPor.join('\n\n'),
+        aplicacao: aplicacao.join('\n\n'),
+        titulo: titulo.replace(/^(título|titulo):\s*/i, '').trim()
+    };
+
+    // Preencher os campos do formulário
+    document.getElementById('principios').value = infoExtraida.principios;
+    document.getElementById('desenvolvidoPor').value = infoExtraida.desenvolvidoPor;
+    document.getElementById('aplicacao').value = infoExtraida.aplicacao;
+    document.getElementById('titulo_resumido').value = infoExtraida.titulo.split(' ').slice(0, 5).join(' ');
+
+    // Log para depuração
+    console.log('Informações extraídas:', infoExtraida);
+
+    // Mostrar resumo das informações extraídas
+    let resumo = 'Informações extraídas e campos preenchidos:\n\n';
+    resumo += `URL do Vídeo: ${infoExtraida.urlVideo}\n\n`;
+    if (infoExtraida.principios) resumo += `Princípios: ${infoExtraida.principios.substring(0, 100)}...\n\n`;
+    if (infoExtraida.desenvolvidoPor) resumo += `Desenvolvido por: ${infoExtraida.desenvolvidoPor.substring(0, 100)}...\n\n`;
+    if (infoExtraida.aplicacao) resumo += `Aplicação: ${infoExtraida.aplicacao.substring(0, 100)}...\n\n`;
+    if (infoExtraida.titulo) resumo += `Título: ${infoExtraida.titulo}\n\n`;
+    resumo += 'Os campos foram preenchidos. Por favor, verifique e ajuste se necessário.';
+
+    alert(resumo);
+
+    // Gerar JSON e Prompt
+    gerarJSONePrompt().catch(error => {
+        console.error(error);
+        alert('Erro ao gerar JSON e prompt: ' + error.message);
+    });
+}
+
+function processarTextoCliente() {
+    const textoCliente = document.getElementById('textoCliente').value.trim();
+    if (!textoCliente) {
+        alert('Por favor, insira o texto do cliente.');
+        return;
+    }
+
+    // Aqui você deve implementar a lógica para processar o texto do cliente
+    // Por exemplo, você pode tentar extrair informações no formato M.A.E.
+    // Esta é uma implementação básica e pode precisar ser ajustada conforme suas necessidades
+
+    const linhas = textoCliente.split('\n');
+    let categoria = '', titulo = '', descricao = '', url = '';
+
+    linhas.forEach(linha => {
+        if (linha.toLowerCase().startsWith('categoria:')) {
+            categoria = linha.substring(10).trim();
+        } else if (linha.toLowerCase().startsWith('título:') || linha.toLowerCase().startsWith('titulo:')) {
+            titulo = linha.substring(7).trim();
+        } else if (linha.toLowerCase().startsWith('descrição:') || linha.toLowerCase().startsWith('descricao:')) {
+            descricao = linha.substring(10).trim();
+        } else if (linha.toLowerCase().startsWith('url:')) {
+            url = linha.substring(4).trim();
+        }
+    });
+
+    // Preencher os campos do formulário com as informações extraídas
+    document.getElementById('principios').value = categoria;
+    document.getElementById('desenvolvidoPor').value = 'Extraído do texto do cliente';
+    document.getElementById('aplicacao').value = descricao;
+    document.getElementById('titulo_resumido').value = titulo.split(' ').slice(0, 5).join(' ');
+
+    // Mostrar resumo das informações extraídas
+    let resumo = 'Informações extraídas do texto do cliente:\n\n';
+    resumo += `Categoria: ${categoria}\n`;
+    resumo += `Título: ${titulo}\n`;
+    resumo += `Descrição: ${descricao}\n`;
+    resumo += `URL: ${url}\n\n`;
+    resumo += 'Os campos foram preenchidos. Por favor, verifique e ajuste se necessário.';
+
+    alert(resumo);
+
+    // Gerar JSON e Prompt
+    gerarJSONePrompt().catch(error => {
+        console.error(error);
+        alert('Erro ao gerar JSON e prompt: ' + error.message);
+    });
+}
+
 // Inicialização
 document.addEventListener('DOMContentLoaded', function() {
     referencias.carregarReferencias();
+    
+    document.getElementById('togglePromptEditor').addEventListener('click', function() {
+        const editor = document.getElementById('promptEditor');
+        const button = document.getElementById('togglePromptEditor');
+        if (editor.style.display === 'none') {
+            editor.style.display = 'block';
+            button.textContent = 'Colapsar Editor';
+        } else {
+            editor.style.display = 'none';
+            button.textContent = 'Expandir Editor';
+        }
+    });
+
+    document.getElementById('editButton').addEventListener('click', function() {
+        const promptEditor = document.getElementById('promptEditor');
+        document.getElementById('promptOutput').textContent = promptEditor.value;
+        alert('Prompt atualizado!');
+    });
+
+    document.getElementById('saveStateButton').addEventListener('click', salvarEstado);
+    document.getElementById('loadStateButton').addEventListener('click', carregarEstado);
+
+    alternarModoEntrada(); // Inicializar o modo de entrada correto
 });
 </script>
 </body>
 </html>
+        
