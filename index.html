@@ -171,9 +171,14 @@
 <div class="container">
     <h1>ENCODER M.A.E.</h1>
     <br>
+
+
     <form id="maeForm">
+
+<button class="button" onclick="abrirOuFocarJanela('https://sobralfreenat.github.io/desafios_e_temas_prompt_text/', 'Instancia 01 P.A.I.', 280, 900, 0, 100)">Desafio /Tópico</button> <br>
+
         <div class="modo-selector">
-            <label>Escolha o modo de entrada:</label>
+            <br><label>Escolha o modo de entrada:</label>
             <select id="modoEntrada" onchange="alternarModoEntrada()">
                 <option value="youtube">Referência YouTube com Transcrição</option>
                 <option value="manual">Entrada Manual (Princípios, Desenvolvido por, Aplicação)</option>
@@ -265,6 +270,8 @@
             <button type="button" onclick="gerarJSONePrompt().catch(error => { console.error(error); alert('Erro ao gerar JSON e prompt: ' + error.message); })">1. Gerar JSON e Prompt</button>
             <button type="button" onclick="copiarPrompt()">2. Copiar Prompt</button>
             <button type="button" onclick="abrirIASelecionada()">3. Abrir IA Selecionada</button>
+
+
         </div>
     </form>
 
