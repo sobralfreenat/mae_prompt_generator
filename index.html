@@ -437,10 +437,11 @@ function abrirPesquisaGoogle() {
     const searchQuery = encodeURIComponent(`${principios} ${desenvolvidoPor} ${aplicacao}`);
     const googleUrl = `https://www.google.com/search?q=${searchQuery}`;
     
-    const width = 800;
-    const height = 600;
-    const left = (window.innerWidth - width) / 2;
-    const top = (window.innerHeight - height) / 2;
+    const width = 390;
+    const height = 400;
+    // Defina valores fixos para left e top
+    const left = 1780; // Ajuste este valor para a posição horizontal desejada
+    const top = -130;  // Ajuste este valor para a posição vertical desejada
     
     window.open(
         googleUrl,
@@ -622,7 +623,7 @@ function abrirIASelecionada() {
         return;
     }
     
-    abrirOuFocarJanela(url, 'IA_Window', 460, 300, 585, 100);
+    abrirOuFocarJanela(url, 'IA_Window', 360, 400, 1750, -130);
 }
 
 function abrirOuFocarJanela(url, title, width, height, left, top) {
